@@ -21,14 +21,16 @@ class Indicators():
         self._frame = self._stock_frame.frame
     
     def set_indicator_signals(self, indicator: str, buy: float, sell: float, condition_buy: Any, condition_sell: Any) -> None:
-        """_summary_
+        """
+        Sets buy and sell signals for a given indicator
 
         Args:
-            indicator (str): _description_
-            buy (float): _description_
-            sell (float): _description_
-            condition_buy (Any): _description_
-            condition_sell (Any): _description_
+            indicator: Name of the indicator.
+            buy: Threshold for buy signal.
+            sell: Threshold for sell signal.
+            condition_buy: Condition for triggering buy signal.
+            condition_sell: Condition for triggering sell signal.
+
         """
         # If there is no signal
         if indicator not in self._indicator_signals:
@@ -41,13 +43,14 @@ class Indicators():
         self._indicator_signals[indicator]['sell_operator'] = condition_sell
 
     def get_indicator_signals(self, indicator: Optional[str]) -> Dict:
-        """_summary_
+        """
+        Retrieves signals for a specific indicator or all indicators
 
         Args:
-            indicator (Optional[str]): _description_
+            indicator (Optional[str]): Name of the indicator (optional)
 
         Returns:
-            Dict: _description_
+            Dict:  dictionary of signals
         """
         if indicator and indicator in self._indicator_signals:
             return self._indicator_signals[indicator]
@@ -73,7 +76,9 @@ class Indicators():
         self._frame = price_data_frame
 
     def change_in_price(self) -> pd.DataFrame:
-        """_summary_
+        """
+        culates the change in price and adds it as a new column to the DataFrame.
+        Stores the arguments and function reference in self._current_indicators
 
         Returns:
             pd.DataFrame: _description_
@@ -115,7 +120,7 @@ class Indicators():
             self._frame['up_day'] = self._price_groups['change_in_price'].transform(
                 lambda x : np.where(x >=0, x, 0)
             )
-
+        # Define the down days
             self._frame['down_day'] = self._price_groups['change_in_price'].transform(
                 lambda x : np.where(x < 0, x.abs(), 0)
             )
@@ -165,7 +170,9 @@ class Indicators():
             return self._frame
         
         def refresh(self):
-            """_summary_
+            """
+            ensures that all the technical indicators stored in 
+            self._current_indicators are recalculated using the latest price data.
             """
             # First update the groups
             self._price_groups = self._stock_frame.symbol_groups
