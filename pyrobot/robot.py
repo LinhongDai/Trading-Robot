@@ -11,10 +11,10 @@ from typing import List
 from typing import Dict
 from typing import Union
 
-
+from pyrobot.portfolio import Portfolio
 class PyRobot():
 
-    def __init__(self, client_id: str, redirect_url: str, credentials_path: str = None, trading_account: str = None) -> None:
+    def __init__(self, client_id: str, redirect_url: str, credentials_path: str = None, trading_account: str = None, paper_trading: bool = True) -> None:
         """_summary_
 
         Args:
@@ -32,6 +32,7 @@ class PyRobot():
         self.trades: dict = {}
         self.historical_prices: dict = {}
         self.stock_frame = None
+        self.paper_trading = paper_trading
 
     def _create_session(self) -> TDClient:
 
@@ -82,17 +83,29 @@ class PyRobot():
         else:
             return False
 
-def create_portfolio(self):
-    pass
+    def create_portfolio(self):
 
-def create_trade(self):
-    pass
+        # Initialize a new portfolio object
+        self.portfolio = Portfolio(account_number=self.trading_account)
 
-def create_stock_frame(self):
-    pass
+        # Assign the client
+        self.portfolio.td_client = self.session
+        return self.portfolio
 
-def grab_current_quotes(self) -> dict:
-    pass
+    def create_trade(self):
+        pass
 
-def grab_historical_prices(self) -> List[Dict]:
-    pass
+    def create_stock_frame(self):
+        pass
+
+    def grab_current_quotes(self) -> dict:
+        # First grab all the symbols
+        symbols = self.portfolio.positions.keys()
+
+        # Grab the quotes
+        quotes = self.session.get_quotes(instruments=list(symbols))
+        
+        return quotes
+
+    def grab_historical_prices(self) -> List[Dict]:
+        pass

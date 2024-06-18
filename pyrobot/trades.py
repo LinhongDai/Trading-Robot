@@ -243,7 +243,7 @@ class Trade():
 
         return new_price
     
-    def add_take_prifit(self, profit_size: float, percentage: bool = False) -> bool:
+    def add_take_profit(self, profit_size: float, percentage: bool = False) -> bool:
         if not self._triggered_added:
             self._convert_to_trigger()
         
@@ -297,57 +297,57 @@ class Trade():
         else:
             raise ValueError("Invalid session")
         
-        @property
-        def order_response(self) -> dict:
-            return self._order_response
+    @property
+    def order_response(self) -> dict:
+        return self._order_response
+    
+    @order_response.setter
+    def order_response(self, order_response_dict: dict) -> None:
+        self._order_response = order_response_dict
+
+    def _generate_order_id(self) -> str:
+
+        if self.order:
+            order_id = "{symbol}_{side}_{enter_or_exit}_{timestamp}"
+
+            order_id = order_id.format(
+                symbol = self.symbol,
+                side=self.side,
+                enter_or_exit=self.enter_or_exit,
+                timestamp=datetime.now().timestamp()
+            )
+
+            return order_id
         
-        @order_response.setter
-        def order_response(self, order_response_dict: dict) -> None:
-            self._order_response = order_response_dict
+        else:
 
-        def _generate_order_id(self) -> str:
-
-            if self.order:
-                order_id = "{symbol}_{side}_{enter_or_exit}_{timestamp}"
-
-                order_id = order_id.format(
-                    symbol = self.symbol,
-                    side=self.side,
-                    enter_or_exit=self.enter_or_exit,
-                    timestamp=datetime.now().timestamp()
-                )
-
-                return order_id
-            
-            else:
-
-                return ""
-            
-        def add_leg(self, order_leg_id: int, symbol: str, quantity: int, asset_type: str, sub_asset_type: str = None) -> List[Dict]:
-            
-            # Define the Leg
-            leg = {}
-            leg['instrument']['symbol'] = symbol
-            leg['instrument']['assetType'] = asset_type
-            leg['quantity'] = quantity
-
-            if sub_asset_type:
-                leg['instrument']['subAssetType'] = sub_asset_type
-            
-            if order_leg_id == 0:
-                self.instrument(
-                    symbol=symbol,
-                    asset_type=asset_type,
-                    quantity=quantity,
-                    sub_asset_type=sub_asset_type,
-                    order_leg_id=0
-                )
-            else:
-                order_leg_collection: list = self.order['orderLegCollection']
-                order_leg_collection.insert(order_leg_id, leg)
-
-            return self.order['orderCollection']
+            return ""
         
-        @property
-        def number_of_legs(self) -> int:
-            return len(self.order['orderLegCollection'])
+    def add_leg(self, order_leg_id: int, symbol: str, quantity: int, asset_type: str, sub_asset_type: str = None) -> List[Dict]:
+        
+        # Define the Leg
+        leg = {}
+        leg['instrument']['symbol'] = symbol
+        leg['instrument']['assetType'] = asset_type
+        leg['quantity'] = quantity
+
+        if sub_asset_type:
+            leg['instrument']['subAssetType'] = sub_asset_type
+        
+        if order_leg_id == 0:
+            self.instrument(
+                symbol=symbol,
+                asset_type=asset_type,
+                quantity=quantity,
+                sub_asset_type=sub_asset_type,
+                order_leg_id=0
+            )
+        else:
+            order_leg_collection: list = self.order['orderLegCollection']
+            order_leg_collection.insert(order_leg_id, leg)
+
+        return self.order['orderCollection']
+    
+    @property
+    def number_of_legs(self) -> int:
+        return len(self.order['orderLegCollection'])
