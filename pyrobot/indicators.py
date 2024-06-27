@@ -145,53 +145,93 @@ class Indicators():
 
             return self._frame
         
-        def sma(self, period: int) -> pd.DataFrame:
-            """_summary_
+    def sma(self, period: int) -> pd.DataFrame:
+        """_summary_
 
-            Args:
-                period (int): _description_
+        Args:
+            period (int): _description_
 
-            Returns:
-                pd.DataFrame: _description_
-            """
-            locals_data = locals()
-            del locals_data['self']
+        Returns:
+            pd.DataFrame: _description_
+        """
+        locals_data = locals()
+        del locals_data['self']
 
-            column_name = 'sma'
-            self._current_indicators[column_name] = {}
-            self._current_indicators[column_name]['args'] = locals_data
-            self._current_indicators[column_name]['func'] = self.sma
+        column_name = 'sma'
+        self._current_indicators[column_name] = {}
+        self._current_indicators[column_name]['args'] = locals_data
+        self._current_indicators[column_name]['func'] = self.sma
 
-            # Add the SMA
-            self._frame[column_name] = self._price_groups['close'].transform(
-                lambda x: x.rolling(window=period).mean()
+        # Add the SMA
+        self._frame[column_name] = self._price_groups['close'].transform(
+            lambda x: x.rolling(window=period).mean()
+        )
+
+        return self._frame
+    
+    def ema(self, period: int, alpha: float = 0.0, column_name = 'ema') -> pd.DataFrame:
+        """Calculates the Exponential Moving Average (EMA).
+
+        Arguments:
+        ----
+        period {int} -- The number of periods to use when calculating the EMA.
+
+        alpha {float} -- The alpha weight used in the calculation. (default: {0.0})
+
+        Returns:
+        ----
+        {pd.DataFrame} -- A Pandas data frame with the EMA indicator included.
+
+        Usage:
+        ----
+            >>> historical_prices_df = trading_robot.grab_historical_prices(
+                start=start_date,
+                end=end_date,
+                bar_size=1,
+                bar_type='minute'
             )
+            >>> price_data_frame = pd.DataFrame(data=historical_prices)
+            >>> indicator_client = Indicators(price_data_frame=price_data_frame)
+            >>> indicator_client.ema(period=50, alpha=1/50)
+        """
 
-            return self._frame
-        
-        def refresh(self):
-            """
-            ensures that all the technical indicators stored in 
-            self._current_indicators are recalculated using the latest price data.
-            """
-            # First update the groups
-            self._price_groups = self._stock_frame.symbol_groups
+        locals_data = locals()
+        del locals_data['self']
 
-            # Loop through all the stored indicators
-            for indicator in self._current_indicators:
+        self._current_indicators[column_name] = {}
+        self._current_indicators[column_name]['args'] = locals_data
+        self._current_indicators[column_name]['func'] = self.ema
 
-                indicator_arguments = self._current_indicators[indicator]['args']
-                indicator_function = self._current_indicators[indicator]['func']
+        # Add the EMA
+        self._frame[column_name] = self._price_groups['close'].transform(
+            lambda x: x.ewm(span=period).mean()
+        )
 
-                # update the columns
-                indicator_function(**indicator_arguments)
+        return self._frame
+    
+    def refresh(self):
+        """
+        ensures that all the technical indicators stored in 
+        self._current_indicators are recalculated using the latest price data.
+        """
+        # First update the groups
+        self._price_groups = self._stock_frame.symbol_groups
 
-        def _check_signals(self) -> Union[pd.DataFrame, None]:
-            """_summary_
+        # Loop through all the stored indicators
+        for indicator in self._current_indicators:
 
-            Returns:
-                Union[pd.DataFrame, None]: _description_
-            """
-            signals_df = self._stock_frame._check_signals(indicators=self._indicator_signals)
+            indicator_arguments = self._current_indicators[indicator]['args']
+            indicator_function = self._current_indicators[indicator]['func']
 
-            return signals_df
+            # update the columns
+            indicator_function(**indicator_arguments)
+
+    def check_signals(self) -> Union[pd.DataFrame, None]:
+        """_summary_
+
+        Returns:
+            Union[pd.DataFrame, None]: _description_
+        """
+        signals_df = self._stock_frame._check_signals(indicators=self._indicator_signals)
+
+        return signals_df
